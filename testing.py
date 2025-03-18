@@ -42,4 +42,6 @@ end_word = "rebut"
 path = word_graph.find_shortest_path(start_word, end_word)
 print(" -> ".join(path) if path else "No path found")
 
+
+word_graph.generate_path_csv("word-paths.csv","valid-words.csv")
 visualize_graph(word_graph, path)

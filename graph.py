@@ -1,6 +1,8 @@
 from collections import defaultdict, deque
 import csv
+import sys
 from node import Node
+from tqdm import tqdm
 
 class Graph:
     def __init__(self, words):
@@ -48,3 +50,40 @@ class Graph:
                     queue.append((neighbor, path + [neighbor]))
         
         return None  # No path found
+    
+    def count_all_paths(self, start, end):
+        if start not in self.adjacency_list or end not in self.adjacency_list:
+            return 0
+        
+        queue = deque([(start, [start])])
+        path_count = 0
+        
+        while queue:
+            word, path = queue.popleft()
+            if word == end:
+                path_count += 1
+            else:
+                for neighbor in self.adjacency_list[word]:
+                    if neighbor not in path:
+                        queue.append((neighbor, path + [neighbor]))
+        
+        return path_count
+    
+    def generate_path_csv(self, filename, valid_words_file):
+        valid_words = set()
+        with open(valid_words_file, "r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                valid_words.add(row[0].strip())
+        
+        valid_pairs = [(w1, w2) for i, w1 in enumerate(valid_words) for w2 in list(valid_words)[i+1:] if w1 in self.adjacency_list and w2 in self.adjacency_list]
+        
+        with open(filename, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Start Word", "End Word", "Path Count"])
+            
+            with tqdm(total=len(valid_pairs), desc="Generating all paths", unit="pair") as pbar:
+                for start, end in valid_pairs:
+                    path_count = self.count_all_paths(start, end)
+                    writer.writerow([start, end, path_count])
+                    pbar.update(1)
