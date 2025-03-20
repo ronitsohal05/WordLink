@@ -1,4 +1,3 @@
-from node import Node
 from graph import Graph
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -32,16 +31,14 @@ def visualize_graph(graph, path=None):
     plt.show()
 
 # Example usage
-word_list = load_word_list("word-bank.csv")  # Ensure you have a word list file
+word_list = load_word_list("testing/word-bank.csv")  # Ensure you have a word list file
 word_graph = Graph(word_list)
 word_graph.remove_unconnected_nodes()
-word_graph.save_filtered_word_list("filtered-word-bank.csv")
+word_graph.save_filtered_word_list("testing/filtered-word-bank.csv")
 
 start_word = "cigar"
 end_word = "rebut"
 path = word_graph.find_shortest_path(start_word, end_word)
 print(" -> ".join(path) if path else "No path found")
 
-
-word_graph.generate_path_csv("word-paths.csv","valid-words.csv")
 visualize_graph(word_graph, path)
