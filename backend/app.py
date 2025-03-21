@@ -24,7 +24,7 @@ def load_words(filename):
 # Load word lists
 word_bank = load_words(WORD_BANK_FILE)  # Used for daily words
 valid_words = load_words(VALID_WORDS_FILE)  # Used for checking valid guesses
-word_graph = Graph(valid_words)  # Graph built only on valid words
+word_graph = Graph(word_bank)  # Graph built only on valid words
 
 def generate_new_daily_pair():
     """Generate a new word pair with at least one path between them."""
@@ -63,6 +63,30 @@ def get_daily_pair():
     
     return jsonify({"error": "No valid word pair found"}), 500
 
+@app.route("/api/daily-solution", methods=["GET"])
+def get_daily_solution():
+    """Fetch the daily solution"""
+    with open(DAILY_PAIR_FILE, "r") as f:
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError:
+            return jsonify({"error": "Corrupted daily pair data"}), 500
+    
+    pair = data.get("pair")
+    if not pair or len(pair) != 2:
+        return jsonify({"error": "Invalid word pair format"}), 500
+    
+    start, end = pair
+    path = word_graph.find_shortest_path(start,end)
+
+    if path:
+        return jsonify({"solution": path}), 200
+    else:
+        return jsonify({"error": "No path found between today's pair"}), 404
+
+    
+    
+
 @app.route("/api/validate-guess", methods=["POST"])
 def validate_guess():
     """Check if the user's guess is valid."""
@@ -80,18 +104,6 @@ def validate_guess():
         return jsonify({"valid": True}), 200
     else:
         return jsonify({"valid": False, "reason": "Guess must differ by one letter and be connected"}), 200
-    
-@app.route("/api/validate-path", methods=["POST"])
-def validate_path():
-    """Check if a path exists between the two words"""
-    data = request.json
-    start = data.get("start")
-    end = data.get("end")
-
-    if word_graph.find_shortest_path(start,end) != None:
-        return jsonify({"valid": True}), 200
-    
-    return jsonify({"valid": False, "reason": "There exists no path between the words"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
