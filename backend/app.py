@@ -5,8 +5,10 @@ from datetime import datetime, UTC
 import random
 import csv
 from graph import Graph
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 DAILY_PAIR_FILE = "daily_pair.json"
 WORD_BANK_FILE = "word-bank.csv"
