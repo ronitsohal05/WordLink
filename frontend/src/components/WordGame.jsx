@@ -6,6 +6,7 @@ function WordGame() {
   const [dailyWordPair, setDailyWordPair] = useState([]);
   const [currentWord, setCurrentWord] = useState("");
   const [guesses, setGuesses] = useState([]);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     fetch('http://127.0.0.1:5000/api/daily-pair')
@@ -18,6 +19,19 @@ function WordGame() {
       })
   }, []);
 
+  function handleEnterGuess(){
+    if(inputValue.trim() !== "") {
+      setGuesses(prevGuesses => [...prevGuesses, inputValue]);
+      setInputValue("");
+    }
+  }
+
+  function handleRestart(){
+    setCurrentWord(dailyWordPair[0]);
+    setGuesses([dailyWordPair[0]]);
+    setInputValue("");
+  }
+
 
   return (
     <div>
@@ -26,9 +40,9 @@ function WordGame() {
       {/*Guess List*/}
       <div>
         <ul>
-          <li>Guess 1</li>
-          <li>Guess 2</li>
-          <li>Guess 3</li>
+          {guesses.map((guess, index) => (
+            <li key={index}>{guess}</li>
+          ))}
         </ul>
       </div>
 
@@ -36,9 +50,11 @@ function WordGame() {
       <div>
         <input
           type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
         />
-        <button>Enter</button>
-        <button>Restart</button>
+        <button onClick={handleEnterGuess}>Enter</button>
+        <button onClick={handleRestart}>Restart</button>
       </div>
 
     </div>
