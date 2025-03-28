@@ -86,9 +86,6 @@ def get_daily_solution():
     else:
         return jsonify({"error": "No path found between today's pair"}), 404
 
-    
-    
-
 @app.route("/api/validate-guess", methods=["POST"])
 def validate_guess():
     """Check if the user's guess is valid."""
@@ -106,6 +103,18 @@ def validate_guess():
         return jsonify({"valid": True}), 200
     else:
         return jsonify({"error": "Guess must differ by one letter"}), 400
+    
+@app.route("/api/check-final-guess", methods=["POST"])
+def check_final_guess():
+    """Check if the user's final guess matches the last word"""
+    data = request.json
+    guess = data.get("guess")
+    final_word = data.get("final_word")
+
+    if guess == final_word:
+        return jsonify({"end": True})
+    else:
+        return jsonify({"end": False})
 
 if __name__ == "__main__":
     app.run(debug=True)

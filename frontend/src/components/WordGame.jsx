@@ -6,7 +6,7 @@ function WordGame() {
   const [dailyWordPair, setDailyWordPair] = useState([]);
   const [currentWord, setCurrentWord] = useState("");
   const [guesses, setGuesses] = useState([]);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(""); 
 
   useEffect(() => {
     fetch('http://127.0.0.1:5000/api/daily-pair')
@@ -31,10 +31,26 @@ function WordGame() {
       })
         .then(res => res.json())
         .then(data => {
+          console.log(data);
           if (data.valid) {
-            setGuesses(prevGuesses => [...prevGuesses, inputValue]);
+            fetch('http://127.0.0.1:5000/api/check-final-guess',{
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({guess: inputValue, final_word: dailyWordPair[1]})
+            })
+            .then(res => res.json())
+            .then(data => {
+              setGuesses(prevGuesses => [...prevGuesses, inputValue]);
+              setCurrentWord(inputValue);
+              if (data.end) {
+                console.log("Game Finished!")
+              }
+            });
+            
           } else{
-            console.log(data);
+            console.log(data.error);
           }
         });
 
