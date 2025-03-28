@@ -7,6 +7,7 @@ function WordGame() {
   const [currentWord, setCurrentWord] = useState("");
   const [guesses, setGuesses] = useState([]);
   const [inputValue, setInputValue] = useState(""); 
+  const [gameOver, setGameOver] = useState(false);
 
   useEffect(() => {
     fetch('http://127.0.0.1:5000/api/daily-pair')
@@ -45,7 +46,7 @@ function WordGame() {
               setGuesses(prevGuesses => [...prevGuesses, inputValue]);
               setCurrentWord(inputValue);
               if (data.end) {
-                console.log("Game Finished!")
+                setGameOver(true);
               }
             });
             
@@ -79,15 +80,23 @@ function WordGame() {
       </div>
 
       {/*Input Buttons*/}
-      <div>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-        />
-        <button onClick={handleEnterGuess}>Enter</button>
-        <button onClick={handleRestart}>Restart</button>
-      </div>
+      {!gameOver && 
+        <div>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+          />
+          <button onClick={handleEnterGuess}>Enter</button>
+          <button onClick={handleRestart}>Restart</button>
+        </div>
+      }
+      {gameOver && 
+        <div>
+          <h1>Congratulations, you solved todays Word Link Puzzle!</h1>
+        </div>
+      }
+      
 
     </div>
   );
