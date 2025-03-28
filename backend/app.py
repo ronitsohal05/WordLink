@@ -100,12 +100,12 @@ def validate_guess():
         return jsonify({"error": "Invalid input"}), 400
 
     if guess not in valid_words:
-        return jsonify({"valid": False, "reason": "Word not allowed"}), 200
+        return jsonify({"error": "Guess must be a 5 letter valid word"}), 200
 
     if guess in word_graph.adjacency_list[current_word]:
         return jsonify({"valid": True}), 200
     else:
-        return jsonify({"valid": False, "reason": "Guess must differ by one letter and be connected"}), 200
+        return jsonify({"error": "Guess must differ by one letter"}), 400
 
 if __name__ == "__main__":
     app.run(debug=True)

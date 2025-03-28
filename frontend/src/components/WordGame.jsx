@@ -21,7 +21,23 @@ function WordGame() {
 
   function handleEnterGuess(){
     if(inputValue.trim() !== "") {
-      setGuesses(prevGuesses => [...prevGuesses, inputValue]);
+
+      fetch('http://127.0.0.1:5000/api/validate-guess',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({guess: inputValue, current_word: currentWord})
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.valid) {
+            setGuesses(prevGuesses => [...prevGuesses, inputValue]);
+          } else{
+            console.log(data);
+          }
+        });
+
       setInputValue("");
     }
   }
