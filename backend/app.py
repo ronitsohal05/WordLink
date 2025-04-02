@@ -23,6 +23,13 @@ def load_words(filename):
             words.add(row[0].strip())
     return words
 
+def differ_by_one(s1, s2):
+    if len(s1) != len(s2):  
+        return False  # Strings must be of equal length
+
+    count = sum(1 for a, b in zip(s1, s2) if a != b)
+    return count == 1
+
 # Load word lists
 word_bank = load_words(WORD_BANK_FILE)  # Used for daily words
 valid_words = load_words(VALID_WORDS_FILE)  # Used for checking valid guesses
@@ -97,9 +104,9 @@ def validate_guess():
         return jsonify({"error": "Invalid input"}), 400
 
     if guess not in valid_words:
-        return jsonify({"error": "Guess must be a 5 letter valid word"}), 200
+        return jsonify({"error": "Guess must be a valid 5 letter word"}), 200
 
-    if guess in word_graph.adjacency_list[current_word]:
+    if differ_by_one(guess, current_word):
         return jsonify({"valid": True}), 200
     else:
         return jsonify({"error": "Guess must differ by one letter"}), 400
