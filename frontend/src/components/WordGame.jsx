@@ -8,6 +8,8 @@ export default function WordGame() {
   const [inputValue, setInputValue] = useState("")
   const [gameOver, setGameOver] = useState(false)
   const [error, setError] = useState("")
+  const [showInstructions, setShowInstructions] = useState(true)
+  const [viewingGuesses, setViewingGuesses] = useState(false)
   const ladderRef = useRef(null)
 
   useEffect(() => {
@@ -26,7 +28,6 @@ export default function WordGame() {
       })
   }, [])
 
-  // Scroll to the latest word whenever guesses change
   useEffect(() => {
     if (ladderRef.current && guesses.length > 0) {
       const scrollHeight = ladderRef.current.scrollHeight
@@ -36,12 +37,10 @@ export default function WordGame() {
 
   function handleEnterGuess() {
     if (inputValue.trim() === "") return
-
     if (inputValue.length !== 5) {
       setError("Please enter a 5-letter word")
       return
     }
-
     setError("")
 
     fetch("http://127.0.0.1:5000/api/validate-guess", {
@@ -78,6 +77,7 @@ export default function WordGame() {
     setInputValue("")
     setGameOver(false)
     setError("")
+    setViewingGuesses(false)
   }
 
   function handleUndo() {
@@ -96,9 +96,55 @@ export default function WordGame() {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-gray-200">
-      {/* Integrated Header */}
+      {/* Instructions Modal */}
+      {showInstructions && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg max-w-md mx-4 text-center border border-gray-700">
+            <h2 className="text-2xl font-bold text-cyan-400">How to Play</h2>
+            <p className="mt-3 text-gray-300 text-sm leading-relaxed">
+              Your goal is to get from the starting word to the final word, changing <strong>only one letter</strong> at a time. Each intermediate word must be valid.
+            </p>
+            <p className="mt-2 text-gray-400 text-sm">Example: START → STARK → STACK → SLACK → BLACK → FINAL</p>
+            <button
+              onClick={() => setShowInstructions(false)}
+              className="mt-4 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* View Guess History Modal */}
+      {viewingGuesses && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg max-w-md mx-4 text-center border border-gray-700">
+            <h2 className="text-xl font-bold text-cyan-400 mb-2">Your Word Path</h2>
+            <div className="flex flex-col items-center gap-2 max-h-60 overflow-y-auto">
+              {guesses.map((word, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-700 px-4 py-2 rounded-lg text-white text-lg tracking-wide"
+                >
+                  {word.toUpperCase()}
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setViewingGuesses(false)}
+              className="mt-4 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Game Header */}
       <div className="w-full max-w-md text-center pt-6 pb-2">
-        <h1 className="text-3xl font-bold text-gray-100">Word <span className="text-3xl font-bold text-cyan-600">Link</span></h1>
+        <h1 className="text-3xl font-bold text-gray-100">
+          Word <span className="text-cyan-600">Link</span>
+        </h1>
         <p className="text-gray-400 mt-1">Change one letter at a time to get from the first word to the last word.</p>
       </div>
 
@@ -114,24 +160,15 @@ export default function WordGame() {
         </div>
       </div>
 
-      {/* Ladder Container - Takes most of the screen */}
+      {/* Word Ladder View */}
       <div className="relative w-full max-w-md flex-1 flex flex-col items-center">
-        {/* Central vertical line */}
         <div className="absolute h-full w-0.5 bg-gray-700 z-0"></div>
-
-        {/* Scrollable Ladder */}
         <div
           ref={ladderRef}
           className="absolute inset-0 overflow-y-auto flex flex-col items-center"
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {/* Spacer to push content down */}
           <div className="h-[40vh]"></div>
-
-          {/* Word Ladder */}
           {guesses.map((guess, index) => (
             <div key={index} className="flex flex-col items-center mb-8 z-10">
               <div
@@ -142,21 +179,17 @@ export default function WordGame() {
                 }`}
               >
                 <div className="text-2xl tracking-wider">{guess.toUpperCase()}</div>
-
-                {/* Connection dot */}
                 {index < guesses.length - 1 && (
                   <div className="absolute -bottom-4 w-2 h-2 rounded-full bg-gray-500 z-20"></div>
                 )}
               </div>
             </div>
           ))}
-
-          {/* Spacer to push content up */}
           <div className="h-[40vh]"></div>
         </div>
       </div>
 
-      {/* Game Over Message - Overlay */}
+      {/* Game Over Modal */}
       {gameOver && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg max-w-md mx-4 text-center border border-gray-700">
@@ -164,30 +197,33 @@ export default function WordGame() {
             <p className="mt-2 text-gray-300">
               You connected {guesses[0]} to {guesses[guesses.length - 1]} in {guesses.length - 1} steps.
             </p>
-            <button
-              onClick={handleRestart}
-              className="mt-4 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
-            >
-              Play Again
-            </button>
+            <div className="mt-4 flex flex-col gap-2">
+              <button
+                onClick={handleRestart}
+                className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={() => setViewingGuesses(true)}
+                className="px-4 py-2 bg-gray-700 text-gray-100 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                View My Path
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Integrated Input Area */}
+      {/* Input Area */}
       <div className="w-full max-w-md bg-gray-800 shadow-lg rounded-t-xl overflow-hidden border-t border-gray-700">
-        {/* Current Word Indicator */}
         <div className="bg-gray-850 bg-opacity-50 p-3 text-center border-b border-gray-700">
           <span className="text-gray-400">Change one letter from: </span>
           <span className="font-bold text-gray-200">{currentWord.toUpperCase()}</span>
         </div>
-
-        {/* Error Message */}
         {error && (
           <div className="bg-red-900/30 px-4 py-2 text-sm text-red-300 border-b border-red-900/50">{error}</div>
         )}
-
-        {/* Input and Buttons */}
         <div className="p-4">
           <div className="flex gap-2">
             <input
@@ -208,8 +244,6 @@ export default function WordGame() {
               Enter
             </button>
           </div>
-
-          {/* Action Buttons */}
           <div className="flex justify-between mt-3">
             <button
               onClick={handleUndo}
@@ -219,7 +253,6 @@ export default function WordGame() {
               <ArrowLeft size={16} />
               Undo Last Guess
             </button>
-
             <button
               onClick={handleRestart}
               className="px-3 py-1.5 text-sm border border-gray-600 rounded-md hover:bg-gray-700 transition-colors"
@@ -230,7 +263,16 @@ export default function WordGame() {
         </div>
       </div>
 
-      {/* Hide scrollbars */}
+      {/* View Instructions Link */}
+      <div className="w-full max-w-md mt-2 mb-4 text-center">
+        <button
+          onClick={() => setShowInstructions(true)}
+          className="text-sm text-cyan-400 underline hover:text-cyan-300"
+        >
+          View Instructions
+        </button>
+      </div>
+
       <style jsx global>{`
         ::-webkit-scrollbar {
           display: none;
@@ -239,4 +281,3 @@ export default function WordGame() {
     </div>
   )
 }
-
