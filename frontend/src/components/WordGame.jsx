@@ -13,7 +13,7 @@ export default function WordGame() {
   const ladderRef = useRef(null)
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/daily-pair")
+    fetch("https://wordlink-8bha.onrender.com/api/daily-pair")
       .then((res) => res.json())
       .then((data) => {
         setDailyWordPair(data)
@@ -43,7 +43,7 @@ export default function WordGame() {
     }
     setError("")
 
-    fetch("http://127.0.0.1:5000/api/validate-guess", {
+    fetch("https://wordlink-8bha.onrender.com/api/validate-guess", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ guess: inputValue, current_word: currentWord }),
@@ -51,7 +51,7 @@ export default function WordGame() {
       .then((res) => res.json())
       .then((data) => {
         if (data.valid) {
-          fetch("http://127.0.0.1:5000/api/check-final-guess", {
+          fetch("https://wordlink-8bha.onrender.com/api/check-final-guess", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ guess: inputValue, final_word: dailyWordPair[1] }),
