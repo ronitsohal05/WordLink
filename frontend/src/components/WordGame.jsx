@@ -99,15 +99,29 @@ export default function WordGame() {
       {/* Instructions Modal */}
       {showInstructions && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg max-w-md mx-4 text-center border border-gray-700">
-            <h2 className="text-2xl font-bold text-cyan-400">How to Play</h2>
-            <p className="mt-3 text-gray-300 text-sm leading-relaxed">
-              Your goal is to get from the starting word to the final word, changing <strong>only one letter</strong> at a time. Each intermediate word must be valid.
-            </p>
-            <p className="mt-2 text-gray-400 text-sm">Example: START → STARK → STACK → SLACK → BLACK → FINAL</p>
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg max-w-md mx-4 text-left border border-gray-700">
+            <h2 className="text-2xl font-bold text-cyan-400 text-center">How to Play</h2>
+            
+            <div className="mt-4 space-y-3 text-sm text-gray-300 leading-relaxed">
+              <p>
+                Your goal is to transform the <span className="font-semibold text-white">start word</span> into the <span className="font-semibold text-white">goal word</span>.
+              </p>
+
+              <ul className="list-disc list-inside space-y-1 pl-1">
+                <li>Change <span className="font-semibold text-white">only one letter</span> at a time.</li>
+                <li>Each of your guesses must be a <span className="font-semibold text-white">valid 5-letter English word</span>.</li>
+                <li>You cannot rearrange letters — only change them in place.</li>
+                <li>A new challenge is available <span className="font-semibold text-white">every day</span>.</li>
+              </ul>
+
+              <p className="text-gray-400">
+                <span className="text-cyan-300 font-medium">Example:</span> START → STARK → STACK → SLACK → BLACK
+              </p>
+            </div>
+
             <button
               onClick={() => setShowInstructions(false)}
-              className="mt-4 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+              className="mt-6 w-full px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
             >
               Got it!
             </button>

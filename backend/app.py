@@ -122,6 +122,21 @@ def check_final_guess():
         return jsonify({"end": True})
     else:
         return jsonify({"end": False})
+    
+@app.route("/api/admin/regenerate-pair", methods=["POST"])
+def regenerate_daily_pair():
+    """Admin route to force regenerate the daily word pair."""
+    new_pair = generate_new_daily_pair()
+
+    if new_pair:
+        with open(DAILY_PAIR_FILE, "w") as f:
+            json.dump({
+                "date": datetime.now(UTC).strftime("%Y-%m-%d"),
+                "pair": new_pair
+            }, f)
+        return jsonify({"message": "Daily pair regenerated", "pair": new_pair}), 200
+
+    return jsonify({"error": "Failed to generate a new valid pair"}), 500
 
 if __name__ == "__main__":
     app.run()
