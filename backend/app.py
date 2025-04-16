@@ -36,17 +36,46 @@ valid_words = load_words(VALID_WORDS_FILE)  # Used for checking valid guesses
 word_graph = Graph(word_bank)  # Graph built only on valid words
 
 def generate_new_daily_pair():
-    """Generate a new word pair with at least one path between them."""
+    """Generate a new word pair with a shortest path length between 7 and 10 words.
+    If not found, pick any valid path and trim it to that range.
+    """
     words = list(word_bank)
-    while words:
+    random.shuffle(words)  # Avoid bias
+    attempts = 0
+
+    # First try to find a naturally sized path
+    while attempts < 5000:
         start, end = random.sample(words, 2)
-        if word_graph.find_shortest_path(start, end):
-            daily_pair = {"date": datetime.now().strftime("%Y-%m-%d"), "pair": [start, end]}
+        path = word_graph.find_shortest_path(start, end)
+        if path and 7 <= len(path) <= 10:
+            daily_pair = {
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "pair": [start, end]
+            }
             with open(DAILY_PAIR_FILE, "w") as f:
                 json.dump(daily_pair, f)
-            return daily_pair["pair"]
-    
-    return None  # Should not happen if word bank is large enough
+            return [start, end]
+        attempts += 1
+
+    # Fallback: generate any path and trim it to 7–10
+    for _ in range(5000):
+        start = random.choice(words)
+        for end in words:
+            if start == end:
+                continue
+            path = word_graph.find_shortest_path(start, end)
+            if path and len(path) >= 7:
+                trimmed_path = path[:random.randint(7, min(10, len(path)))]
+                daily_pair = {
+                    "date": datetime.now().strftime("%Y-%m-%d"),
+                    "pair": [trimmed_path[0], trimmed_path[-1]]
+                }
+                with open(DAILY_PAIR_FILE, "w") as f:
+                    json.dump(daily_pair, f)
+                return [trimmed_path[0], trimmed_path[-1]]
+
+    return None  # Extremely unlikely fallback
+
 
 @app.route("/api/daily-pair", methods=["GET"])
 def get_daily_pair():
@@ -123,20 +152,5 @@ def check_final_guess():
     else:
         return jsonify({"end": False})
     
-@app.route("/api/admin/regenerate-pair", methods=["POST"])
-def regenerate_daily_pair():
-    """Admin route to force regenerate the daily word pair."""
-    new_pair = generate_new_daily_pair()
-
-    if new_pair:
-        with open(DAILY_PAIR_FILE, "w") as f:
-            json.dump({
-                "date": datetime.now(UTC).strftime("%Y-%m-%d"),
-                "pair": new_pair
-            }, f)
-        return jsonify({"message": "Daily pair regenerated", "pair": new_pair}), 200
-
-    return jsonify({"error": "Failed to generate a new valid pair"}), 500
-
 if __name__ == "__main__":
     app.run()
