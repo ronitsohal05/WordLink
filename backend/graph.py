@@ -47,3 +47,28 @@ class Graph:
             start, end = random.sample(words, 2)
             if self.find_shortest_path(start, end):
                 return start, end
+
+    def find_all_paths_limited(self, start, end, max_depth=10, max_paths=1000):
+        if start not in self.adjacency_list or end not in self.adjacency_list:
+            return []
+
+        paths = []
+        queue = deque([(start, [start])])
+
+        while queue:
+            current_word, path = queue.popleft()
+
+            if len(path) > max_depth:
+                continue
+
+            if current_word == end:
+                paths.append(path)
+                if len(paths) >= max_paths:
+                    break
+                continue
+
+            for neighbor in self.adjacency_list[current_word]:
+                if neighbor not in path:  # avoid cycles
+                    queue.append((neighbor, path + [neighbor]))
+
+        return paths

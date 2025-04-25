@@ -152,5 +152,22 @@ def check_final_guess():
     else:
         return jsonify({"end": False})
     
+@app.route("/api/path-count", methods=["POST"])
+def path_count():
+    """Return the number of paths from a word to the final word."""
+    data = request.json
+    word = data.get("word")
+    final_word = data.get("final_word")
+
+    if not word or not final_word:
+        return jsonify({"error": "Invalid input"}), 400
+
+    paths = word_graph.find_all_paths_limited(word, final_word)
+
+    if paths is not None:
+        return jsonify({"count": len(paths)}), 200
+    else:
+        return jsonify({"count": 0}), 200
+
 if __name__ == "__main__":
     app.run()
