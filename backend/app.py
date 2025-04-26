@@ -152,9 +152,8 @@ def check_final_guess():
     else:
         return jsonify({"end": False})
     
-@app.route("/api/path-count", methods=["POST"])
-def path_count():
-    """Return the number of paths from a word to the final word."""
+@app.route("/api/shortest-distance", methods=["POST"])
+def shortest_distance():
     data = request.json
     word = data.get("word")
     final_word = data.get("final_word")
@@ -162,12 +161,35 @@ def path_count():
     if not word or not final_word:
         return jsonify({"error": "Invalid input"}), 400
 
-    paths = word_graph.find_all_paths_limited(word, final_word)
-
-    if paths is not None:
-        return jsonify({"count": len(paths)}), 200
+    path = word_graph.find_shortest_path(word, final_word)
+    if path:
+        return jsonify({"distance": len(path) - 1})
     else:
-        return jsonify({"count": 0}), 200
+        return jsonify({"distance": None}) # unreachable
+    
+@app.route("/api/hint", methods=["POST"])
+def hint():
+    data = request.json
+    word = data.get("word")
+    final_word = data.get("final_word")
+
+    if not word or not final_word:
+        return jsonify({"hint": "Invalid request."}), 400
+
+    path = word_graph.find_shortest_path(word, final_word)
+    if not path:
+        return jsonify({"hint": "You're far from the goal. Try a different direction!"})
+
+    distance = len(path) - 1
+
+    if distance <= 3:
+        return jsonify({"hint": "You're very close!"})
+    elif distance <= 6:
+        return jsonify({"hint": "You're on the right track."})
+    else:
+        return jsonify({"hint": "You're drifting away. Try another path."})
+
+
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
