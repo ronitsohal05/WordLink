@@ -15,7 +15,7 @@ export default function WordGame() {
   const ladderRef = useRef(null)
   const [hintsUsed, setHintsUsed] = useState(0);
 
-  const API_LINK = "http://127.0.0.1:5000/";
+  const API_LINK = "https://wordlink-8bha.onrender.com";
 
   useEffect(() => {
     fetch(API_LINK+"api/daily-pair")
